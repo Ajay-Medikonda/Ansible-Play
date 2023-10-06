@@ -1,0 +1,64 @@
+---
+#we can have multiple plays in a playbook , For example as follows
+#Play 01: Installing Basic Packages & Nginx
+- name: Play for installing nginx on webservers
+  hosts: all
+  gather_facts: yes
+  become: yes 
+  #or we can give > become_user: root  
+  tasks:
+  - name: Perform apt update & install basic packages
+    shell: apt update && apt install -y unzip jq net-tools
+    when: (ansible_facts['distribution'] == "ubuntu" and ansible_facts['distribution_version'] == "20.04" )
+  
+  - name: Install Nginx webserver Application
+    #shell: apt install -y nginx 
+    #We can use this "shell Module" or "package" module as follows
+    #package: 
+    #  name: nginx  or
+    #  name:
+    #    - nginx
+    #  state: present
+    #We can also use "apt" Module as follows for ubuntu system
+    apt:
+     name: nginx
+     #state: present or 
+     state: latest
+  
+  - name: Start nginx service
+    #shell: service nginx start
+    #We can use this "shell Module" or "service" module as follows
+    service: 
+     name: nginx
+     state: started
+  tags:
+  - nginx
+#Play 02 for copying a file to particular server called: testserver01
+- name: Play for copying file into testserver01
+  hosts: testserver01
+  become: yes 
+  #or we can give > become_user: root  
+  tasks:
+  - name: copy html file
+    copy:
+      src: ../index.html
+      dest: /var/www/html/index.nginx-debian.html
+      owner: root
+      group: root
+      mode: '0644'
+  - name: copy scorekeeper.js file
+    copy:
+      src: ../scorekeeper.js
+      dest: /var/www/html/scorekeeper.js
+      owner: root
+      group: root
+      mode: '0644'
+  - name: copy style.css file
+    copy:
+      src: ../index.html
+      dest: /var/www/html/style.css
+      owner: root
+      group: root
+      mode: '0644'
+  tags:
+  - files
