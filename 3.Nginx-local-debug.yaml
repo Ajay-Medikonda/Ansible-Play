@@ -1,0 +1,43 @@
+---
+- name: Play for installing nginx on webservers
+  hosts: all
+  gather_facts: yes
+  become: yes
+  #become: yes > Controller will get root previliages
+  become_user: root
+  #become_user: root > Controller will execute playbook through user --> root
+  serial: 1  
+  #Serial Strategy:This strategy executes tasks on a defined number of hosts at a time, 
+  #allowing for controlled parallelism
+  vars:
+    AWS_ACCOUNT: "370639060656"
+  tasks:
+  - name: Print variables
+    debug:
+     msg: system  {{inventory_hostname}} has variable {{ AWS_ACCOUNT }}
+    #
+  - name: Perform apt update & install basic packages
+    shell: apt update && apt install -y unzip jq net-tools
+    when: (ansible_facts['distribution'] == "Ubuntu" and ansible_facts['distribution_version'] == "20.04" )
+  
+  - name: Install Nginx webserver Application
+    #shell: apt install -y nginx 
+    #We can use this "shell Module" or "package" module as follows
+    #package: 
+    #  name: nginx  or
+    #  name:
+        # - nginx
+    #  state: present
+    #We can also use "apt" Module as follows for ubuntu system
+    apt:
+     name: nginx
+     #state: present or 
+     state: latest
+  
+  - name: Start nginx service
+    #shell: service nginx start
+    #We can use this "shell Module" or "service" module as follows
+    service: 
+     name: nginx
+     state: started
+...
